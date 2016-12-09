@@ -8,7 +8,7 @@
                 <div class="panel-heading">Dashboard</div>
 
                 <div class="panel-body">
-                    You are logged in!
+                    Ви увійшли як {{ Auth::user()->role->display_name }}!
                 </div>
             </div>
         </div>

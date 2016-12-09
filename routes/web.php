@@ -17,10 +17,14 @@ Route::get('/', function () {
 
 Auth::routes();
 
+// Disable default registration and password reset
+Route::get('/register', function() { return abort(404); });
+Route::get('/password/reset', function() { return abort(404); });
+
 // Make user's registration available only to logged users with the Admin role
-Route::get('/register', ['middleware' => 'role.admin', function()
+Route::group(['middleware' => ['role.admin']], function()
 {
-    return view('auth.register');
-}]);
+    Route::resource('/home/user', 'UserController');
+});
 
 Route::get('/home', 'HomeController@index');
