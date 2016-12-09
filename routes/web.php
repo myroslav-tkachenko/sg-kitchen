@@ -17,8 +17,10 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/home', 'HomeController@index');
-
-Auth::routes();
+// Make user's registration available only to logged users with the Admin role
+Route::get('/register', ['middleware' => 'role.admin', function()
+{
+    return view('auth.register');
+}]);
 
 Route::get('/home', 'HomeController@index');
