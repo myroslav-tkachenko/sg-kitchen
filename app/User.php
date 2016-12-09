@@ -26,4 +26,42 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    /**
+     * Get user's role
+     */
+    public function role()
+    {
+        return $this->belongsTo('App\Role');
+    }
+
+    /**
+     * Check if User has 'admin' role
+     *
+     * @return boolean
+     */
+    public function isAdmin()
+    {
+        return $this->role->name == 'admin';
+    }
+
+    /**
+     * Check if User has 'cook' role
+     *
+     * @return boolean
+     */
+    public function isCook()
+    {
+        return $this->role->name == 'cook';
+    }
+
+    /**
+     * Check if User has 'waiter' role
+     *
+     * @return boolean
+     */
+    public function isWatier()
+    {
+        return $this->role->name == 'waiter';
+    }
 }
