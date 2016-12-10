@@ -30,6 +30,7 @@ Route::group(['middleware' => ['role.admin']], function()
 // Logged users can view Orders
 Route::group(['middleware' => ['auth']], function()
 {
+    Route::get('/home/order/all', 'OrderController@getAll');
     Route::resource('/home/order', 'OrderController');
 });
 

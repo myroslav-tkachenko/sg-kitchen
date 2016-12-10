@@ -64,4 +64,14 @@ class User extends Authenticatable
     {
         return $this->role->name == 'waiter';
     }
+
+    /**
+     * Check if User can add Orders
+     *
+     * @return boolean
+     */
+    public function canAddOrders()
+    {
+        return $this->isWatier() || $this->isAdmin();
+    }
 }

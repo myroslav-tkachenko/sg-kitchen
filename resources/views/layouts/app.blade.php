@@ -12,6 +12,11 @@
 
     <!-- Styles -->
     <link href="/css/app.css" rel="stylesheet">
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
 
     <!-- Scripts -->
     <script>
@@ -52,6 +57,25 @@
                             </ul>
                         </li>
                         @endif
+
+                        @if (Auth::user() && Auth::user()->canAddOrders())
+                        <li class="dropdown ">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="glyphicon glyphicon-list"></i> Замовлення <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                @if (Auth::user()->isAdmin())
+                                    <li><a href="{{ url('/home/order') }}">Всі замовлення</a></li>
+                                @else
+                                    <li><a href="{{ url('/home/order') }}">Мої замовлення</a></li>
+                                @endif
+                                <li><a href="{{ url('/home/order/create') }}">Створити нове замовлення</a></li>
+                            </ul>
+                        </li>
+                        @endif
+
+                        @if (Auth::user() && Auth::user()->isCook())
+                            <li><a href="{{ url('/home/order') }}"><i class="glyphicon glyphicon-list"></i> Замовлення на кухні</a></li>
+                        @endif
+
                     </ul>
 
                     <!-- Right Side Of Navbar -->
@@ -62,7 +86,7 @@
                         @else
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                                    {{ Auth::user()->name }} <span class="caret"></span>
+                                    {{ Auth::user()->name }} ({{ Auth::user()->role->display_name }})<span class="caret"></span>
                                 </a>
 
                                 <ul class="dropdown-menu" role="menu">
@@ -89,6 +113,9 @@
     </div>
 
     <!-- Scripts -->
+
+    @yield('script')
+
     <script src="/js/app.js"></script>
 </body>
 </html>
