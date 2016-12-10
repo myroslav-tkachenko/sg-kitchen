@@ -102,14 +102,14 @@ class OrderController extends Controller
         ]);
 
         Redis::publish(
-                'orders-channel',
-                json_encode([
-                    'message' => 'newOrder',
-                    'data' => [
-                            'order_id' => $order->id,
-                        ]
-                    ])
-            );
+            'orders-channel',
+            json_encode([
+                'message' => 'newOrder',
+                'data' => [
+                    'order_id' => $order->id,
+                ]
+            ])
+        );
 
         return redirect('home/order');
 
@@ -140,14 +140,14 @@ class OrderController extends Controller
                 $result['message'] = 'Order passed!';
 
                 Redis::publish(
-                        'orders-channel',
-                        json_encode([
-                            'message' => 'passOrder',
-                            'data' => [
-                                    'order_id' => $order->id,
-                                ]
-                            ])
-                    );
+                    'orders-channel',
+                    json_encode([
+                        'message' => 'passOrder',
+                        'data' => [
+                            'order_id' => $order->id,
+                        ]
+                    ])
+                );
 
                 break;
 
@@ -158,14 +158,14 @@ class OrderController extends Controller
                 $result['message'] = 'Order was finished!';
 
                 Redis::publish(
-                        'orders-channel',
-                        json_encode([
-                            'message' => 'finishOrder',
-                            'data' => [
-                                    'order_id' => $order->id,
-                                ]
-                            ])
-                    );
+                    'orders-channel',
+                    json_encode([
+                        'message' => 'finishOrder',
+                        'data' => [
+                            'order_id' => $order->id,
+                        ]
+                    ])
+                );
 
                 break;
         }
