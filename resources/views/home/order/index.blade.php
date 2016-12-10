@@ -11,6 +11,7 @@
                         <thead>
                             <tr>
                                 <th style="width: 10%;">id</th>
+                                <th>Номер столу</th>
                                 <th>Назва страви</th>
                                 <th>Офіціант</th>
                                 <th>Статус</th>
@@ -20,8 +21,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="order in orders" v-if="order.status_id != 4">
+                            <tr v-for="order in orders">
                                 <td>@{{ order.id }}</td>
+                                <td>@{{ order.table_id }}</td>
                                 <td>@{{ order.name }}</td>
                                 <td>@{{ order.user.name }}</td>
                                 <td>@{{ order.status.display_name }}</td>

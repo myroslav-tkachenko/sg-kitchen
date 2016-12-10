@@ -49,6 +49,7 @@ class OrderController extends Controller
         if ( $user->isWatier() ) {
             $orders = Order::where('user_id', '=', $user->id)
                         ->with('user', 'status')
+                        ->orderBy('status_id')
                         ->get();
         }
 

@@ -17,7 +17,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="order in orders">
+                            <tr v-for="order in orders" v-bind:class="{ 'danger': isFinished(order) }">
                                 <td>@{{ order.id }}</td>
                                 <td>@{{ order.name }}</td>
                                 <td>@{{ order.status.display_name }}</td>
@@ -91,6 +91,10 @@
                         }
 
                     )
+            },
+
+            isFinished: function(order) {
+                return order.status.name === 'done';
             }
         },
 
