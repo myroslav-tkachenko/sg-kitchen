@@ -14,14 +14,27 @@
                                 <th>Назва страви</th>
                                 <th>Офіціант</th>
                                 <th>Статус</th>
+                                @if ($user->isCook())
+                                    <th>Дії</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="order in orders">
+                            <tr v-for="order in orders" v-if="order.status_id != 4">
                                 <td>@{{ order.id }}</td>
                                 <td>@{{ order.name }}</td>
                                 <td>@{{ order.user.name }}</td>
                                 <td>@{{ order.status.display_name }}</td>
+                                @if ($user->isCook())
+                                <td>
+                                    <a href="#!" class="btn btn-success"
+                                        v-if="order.status.id != 4"
+                                        @click="finishOrder(order)"
+                                    >
+                                        Виконано!
+                                    </a>
+                                </td>
+                                @endif
                             </tr>
                         </tbody>
                     </table>                
@@ -37,6 +50,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/1.0.3/vue-resource.min.js"></script>
 
 <script>
+    Vue.http.headers.common['X-CSRF-TOKEN'] = document.querySelector('[name="_token"]').getAttribute('value');
+
     var orders = new Vue({
         el: '#orders',
 
@@ -50,13 +65,29 @@
         },
 
         methods: {
+            finishOrder: function(order) {
+                var submissionData = {
+                        id: order.id,
+                        action: 'finish',
+                    };
 
+                this.$http.post('order/pass', submissionData).then(
+                        function(r) {
+                            console.log(r.data);
+                            console.log('Order ', order.id, ' was finished');
+                        },
+                        function(r) {
+                            console.log(r);
+                            console.log('Error while finishing Order');
+                        }
+
+                    )
+            }
         },
 
         created: function() {
             this.$http.get('order/all').then(
                 function(r) {
-                    console.log(r.data);
                     this.orders = r.data;
                 },
                 function(r) {

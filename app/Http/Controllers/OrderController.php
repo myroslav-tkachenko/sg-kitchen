@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 use App\Order;
 use App\User;
 
@@ -100,8 +101,76 @@ class OrderController extends Controller
             'status_id' => 1, // TODO: consider to add as a default value to Scheme
         ]);
 
+        Redis::publish(
+                'orders-channel',
+                json_encode([
+                    'message' => 'newOrder',
+                    'data' => [
+                            'order_id' => $order->id,
+                        ]
+                    ])
+            );
+
         return redirect('home/order');
 
+    }
+
+    /**
+     * Change order's status
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function changeStatus(Request $request)
+    {
+        $order = Order::find($request->id);
+        $action = $request->action;
+        $result = [
+                'status' => 'error',
+                'message' => 'Wrong submission data',
+            ];
+
+        if ( ! $order ) abort(404);
+
+        switch ($action) {
+            case 'pass':
+                $order->status_id = 2;
+                $order->save();
+                $result['status'] = 'ok';
+                $result['message'] = 'Order passed!';
+
+                Redis::publish(
+                        'orders-channel',
+                        json_encode([
+                            'message' => 'passOrder',
+                            'data' => [
+                                    'order_id' => $order->id,
+                                ]
+                            ])
+                    );
+
+                break;
+
+            case 'finish':
+                $order->status_id = 4;
+                $order->save();
+                $result['status'] = 'ok';
+                $result['message'] = 'Order was finished!';
+
+                Redis::publish(
+                        'orders-channel',
+                        json_encode([
+                            'message' => 'finishOrder',
+                            'data' => [
+                                    'order_id' => $order->id,
+                                ]
+                            ])
+                    );
+
+                break;
+        }
+
+        return json_encode($result);
     }
 
     /**

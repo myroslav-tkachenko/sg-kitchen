@@ -13,6 +13,7 @@
                                 <th style="width: 10%;">id</th>
                                 <th>Назва страви</th>
                                 <th>Статус</th>
+                                <th>Дії</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -20,6 +21,14 @@
                                 <td>@{{ order.id }}</td>
                                 <td>@{{ order.name }}</td>
                                 <td>@{{ order.status.display_name }}</td>
+                                <td>
+                                    <a href="#!" class="btn btn-success"
+                                        v-if="order.status.id == 1"
+                                        @click="passOrder(order)"
+                                    >
+                                        Передати!
+                                    </a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -35,6 +44,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/1.0.3/vue-resource.min.js"></script>
 
 <script>
+    Vue.http.headers.common['X-CSRF-TOKEN'] = document.querySelector('[name="_token"]').getAttribute('value');
+
     var orders = new Vue({
         el: '#orders',
 
@@ -48,19 +59,36 @@
         },
 
         methods: {
+            passOrder: function(order) {
+                var submissionData = {
+                        id: order.id,
+                        action: 'pass',
+                    };
 
+                this.$http.post('order/pass', submissionData).then(
+                        function(r) {
+                            console.log(r.data);
+                            console.log('Order ', order.id, ' passed');
+                        },
+                        function(r) {
+                            console.log(r);
+                            console.log('Error while passing Order');
+                        }
+
+                    )
+            }
         },
 
         created: function() {
             this.$http.get('order/all').then(
-                function(r) {
-                    this.orders = r.data;
-                },
-                function(r) {
-                    console.log(r);
-                    console.log('Error retrieving Orders');
-                }
-            );
+                    function(r) {
+                        this.orders = r.data;
+                    },
+                    function(r) {
+                        console.log(r);
+                        console.log('Error retrieving Orders');
+                    }
+                );
         }
     });
 

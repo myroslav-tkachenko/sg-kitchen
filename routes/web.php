@@ -31,6 +31,7 @@ Route::group(['middleware' => ['role.admin']], function()
 Route::group(['middleware' => ['auth']], function()
 {
     Route::get('/home/order/all', 'OrderController@getAll');
+    Route::post('/home/order/pass', 'OrderController@changeStatus');
     Route::resource('/home/order', 'OrderController');
 });
 
