@@ -48,8 +48,11 @@
 @section('script')
 <script src="https://unpkg.com/vue/dist/vue.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/1.0.3/vue-resource.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.1/socket.io.js"></script>
 
 <script>
+    var socket = io('{{ URL::to('/') }}:3000');
+
     Vue.http.headers.common['X-CSRF-TOKEN'] = document.querySelector('[name="_token"]').getAttribute('value');
 
     var orders = new Vue({
@@ -65,6 +68,18 @@
         },
 
         methods: {
+            fetchOrdersList: function() {
+                this.$http.get('order/all').then(
+                    function(r) {
+                        this.orders = r.data;
+                    },
+                    function(r) {
+                        console.log(r);
+                        console.log('Error retrieving Orders');
+                    }
+                );
+            },
+            
             finishOrder: function(order) {
                 var submissionData = {
                         id: order.id,
@@ -86,15 +101,11 @@
         },
 
         created: function() {
-            this.$http.get('order/all').then(
-                function(r) {
-                    this.orders = r.data;
-                },
-                function(r) {
-                    console.log(r);
-                    console.log('Error retrieving Orders');
-                }
-            );
+            this.fetchOrdersList();
+
+            socket.on('orders-channel:newOrder', this.fetchOrdersList);
+            socket.on('orders-channel:passOrder', this.fetchOrdersList);
+            socket.on('orders-channel:finishOrder', this.fetchOrdersList);
         }
     });
 
