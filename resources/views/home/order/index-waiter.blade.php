@@ -43,10 +43,6 @@
             </div>
         </div>
     </div>
-
-    <pre>
-        @{{ timers }}
-    </pre>
 </div>
 @endsection
 

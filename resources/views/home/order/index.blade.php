@@ -70,11 +70,6 @@
             </div>
         </div>
     </div>
-
-    <pre>
-        @{{ timers }}
-        @{{ selectedOrder }}
-    </pre>
 </div>
 @endsection
 
