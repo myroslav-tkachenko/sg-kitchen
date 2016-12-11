@@ -20,7 +20,14 @@
                             <tr v-for="order in orders" v-bind:class="{ 'danger': isFinished(order) }">
                                 <td>@{{ order.id }}</td>
                                 <td>@{{ order.name }}</td>
-                                <td>@{{ order.status.display_name }}</td>
+                                <td>
+                                    @{{ order.status.display_name }}
+                                    <!-- counter -->
+                                    <span v-if="order.status.name === 'in_process'"
+                                        v-html="renderCounter(order)"
+                                    >
+                                    </span>
+                                </td>
                                 <td>
                                     <a href="#!" class="btn btn-success"
                                         v-if="order.status.id == 1"
@@ -36,6 +43,10 @@
             </div>
         </div>
     </div>
+
+    <pre>
+        @{{ timers }}
+    </pre>
 </div>
 @endsection
 
@@ -78,9 +89,10 @@
                 var submissionData = {
                         id: order.id,
                         action: 'pass',
+                        data: '',
                     };
 
-                this.$http.post('order/pass', submissionData).then(
+                this.$http.post('order/change', submissionData).then(
                         function(r) {
                             console.log(r.data);
                             console.log('Order ', order.id, ' passed');
@@ -91,6 +103,16 @@
                         }
 
                     )
+            },
+
+            renderCounter: function(order) {
+                var timer = this.timers.find(function(e) {
+                    if (e.order_id === order.id) return e;
+                    return false;
+                });
+
+                if ( ! timer ) return '0 сек.';
+                return timer.time + ' сек.';
             },
 
             isFinished: function(order) {
@@ -104,9 +126,13 @@
             socket.on('orders-channel:newOrder', this.fetchOrdersList);
             socket.on('orders-channel:passOrder', this.fetchOrdersList);
             socket.on('orders-channel:finishOrder', this.fetchOrdersList);
+            socket.on('orders-channel:processingOrder', this.fetchOrdersList);
         }
     });
 
     console.log('Waiter is here');
+    socket.on('timers', function(t) {
+        orders.timers = t;
+    });
 </script>
 @endsection

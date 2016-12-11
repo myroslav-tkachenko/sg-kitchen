@@ -16,7 +16,7 @@
                                 <th>Офіціант</th>
                                 <th>Статус</th>
                                 @if ($user->isCook())
-                                    <th>Дії</th>
+                                    <th style="width: 15%;">Дії</th>
                                 @endif
                             </tr>
                         </thead>
@@ -26,15 +26,41 @@
                                 <td>@{{ order.table_id }}</td>
                                 <td>@{{ order.name }}</td>
                                 <td>@{{ order.user.name }}</td>
-                                <td>@{{ order.status.display_name }}</td>
-                                @if ($user->isCook())
                                 <td>
+                                    @{{ order.status.display_name }}
+                                    <!-- counter -->
+                                    <span v-if="order.status.name === 'in_process'">
+                                        @{{ renderCounter(order) }}
+                                    </span>
+                                </td>
+
+                                @if ($user->isCook())
+                                <td class="text-right">
+                                    <div class="form-inline" style="margin-bottom: 15px;"
+                                        v-if="order.status.name === 'passed'"
+                                    >
+                                        <div class="form-group">
+                                            <input type="number" class="form-control input-sm" style="width: 100px;"
+                                                v-on:focus="selectedOrder = order"
+                                                v-model="cookingTime"
+                                            >
+                                        </div>
+                                        <button class="btn btn-primary input-sm"
+                                            @click="setOrderTime"
+                                            v-if="selectedOrder && order.id === selectedOrder.id && cookingTime"
+                                        >
+                                            Ok
+                                        </button>
+                                    </div>
+
+                                    {{--
                                     <a href="#!" class="btn btn-success"
-                                        v-if="order.status.id != 4"
-                                        @click="finishOrder(order)"
+                                        v-if="order.status.name === 'in_process'"
+                                        @click="finishOrder(order.id)"
                                     >
                                         Виконано!
                                     </a>
+                                    --}}
                                 </td>
                                 @endif
                             </tr>
@@ -44,6 +70,11 @@
             </div>
         </div>
     </div>
+
+    <pre>
+        @{{ timers }}
+        @{{ selectedOrder }}
+    </pre>
 </div>
 @endsection
 
@@ -67,6 +98,9 @@
         data: {
             orders: [],
             timers: [],
+
+            selectedOrder: null,
+            cookingTime: 0,
         },
 
         methods: {
@@ -82,16 +116,50 @@
                 );
             },
             
-            finishOrder: function(order) {
+            setOrderTime: function() {
                 var submissionData = {
-                        id: order.id,
+                    id: this.selectedOrder.id,
+                    action: 'settime',
+                    data: this.cookingTime
+                };
+
+                this.$http.post('order/change', submissionData).then(
+                    function(r) {
+                        console.log(r.data);
+                        console.log('Order ', this.selectedOrder.id, ' was set to cook!');
+                        this.selectedOrder = null;
+                        this.cookingTime = 0;
+                    },
+                    function(r) {
+                        console.log(r);
+                        console.log('Error while finishing Order');
+                    }
+
+                )
+            },
+
+            renderCounter: function(order) {
+                var timer = this.timers.find(function(e) {
+                    if (e.order_id === order.id) return e;
+                    return false;
+                });
+
+                if ( ! timer ) return '0 сек.';
+                return timer.time + ' сек.';
+            },
+
+            // TODO: consider to pass order.id only
+            finishOrder: function(id) {
+                var submissionData = {
+                        id: id,
                         action: 'finish',
+                        data: '',
                     };
 
-                this.$http.post('order/pass', submissionData).then(
+                this.$http.post('order/change', submissionData).then(
                         function(r) {
                             console.log(r.data);
-                            console.log('Order ', order.id, ' was finished');
+                            console.log('Order ', id, ' was finished');
                         },
                         function(r) {
                             console.log(r);
@@ -108,9 +176,20 @@
             socket.on('orders-channel:newOrder', this.fetchOrdersList);
             socket.on('orders-channel:passOrder', this.fetchOrdersList);
             socket.on('orders-channel:finishOrder', this.fetchOrdersList);
+            socket.on('orders-channel:processingOrder', this.fetchOrdersList);
+
+            // TODO: consider to catch a message when counter is expired on the node's side
+            socket.on('orders-channel:counterIsOver', function(data) {
+                console.log(data);
+                this.finishOrder(data.order_id);
+            }.bind(this));
         }
     });
 
     console.log('Admin or Kitchen is here');
+    socket.on('timers', function(t) {
+        orders.timers = t;
+    });
+
 </script>
 @endsection

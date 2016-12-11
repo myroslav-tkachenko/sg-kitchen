@@ -126,9 +126,10 @@ class OrderController extends Controller
     {
         $order = Order::find($request->id);
         $action = $request->action;
+        $data = $request->data;
         $result = [
                 'status' => 'error',
-                'message' => 'Wrong submission data',
+                'message' => 'Wrong request data',
             ];
 
         if ( ! $order ) abort(404);
@@ -144,8 +145,28 @@ class OrderController extends Controller
                     'orders-channel',
                     json_encode([
                         'message' => 'passOrder',
-                        'data' => [
+                        'content' => [
                             'order_id' => $order->id,
+                            'data' => $data,
+                        ]
+                    ])
+                );
+
+                break;
+
+            case 'settime':
+                $order->status_id = 3;
+                $order->save();
+                $result['status'] = 'ok';
+                $result['message'] = 'Order was set to cook!';
+
+                Redis::publish(
+                    'orders-channel',
+                    json_encode([
+                        'message' => 'processingOrder',
+                        'content' => [
+                            'order_id' => $order->id,
+                            'data' => $data,
                         ]
                     ])
                 );
@@ -162,8 +183,9 @@ class OrderController extends Controller
                     'orders-channel',
                     json_encode([
                         'message' => 'finishOrder',
-                        'data' => [
+                        'content' => [
                             'order_id' => $order->id,
+                            'data' => $data,
                         ]
                     ])
                 );
