@@ -17,6 +17,10 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <tr v-if="orders.length == 0">
+                                <td colspan="4" class="text-center">Немає замовлень</td>
+                            </tr>
+
                             <tr v-for="order in orders" v-bind:class="{ 'danger': isFinished(order) }">
                                 <td>@{{ order.id }}</td>
                                 <td>@{{ order.name }}</td>
@@ -107,7 +111,7 @@
                     return false;
                 });
 
-                if ( ! timer ) return '0 сек.';
+                if ( ! timer ) return '- сек.';
                 return timer.time + ' сек.';
             },
 

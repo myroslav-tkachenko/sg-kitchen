@@ -127,6 +127,7 @@ class OrderController extends Controller
         $order = Order::find($request->id);
         $action = $request->action;
         $data = $request->data;
+        $publish_message = '';
         $result = [
                 'status' => 'error',
                 'message' => 'Wrong request data',
@@ -141,16 +142,7 @@ class OrderController extends Controller
                 $result['status'] = 'ok';
                 $result['message'] = 'Order passed!';
 
-                Redis::publish(
-                    'orders-channel',
-                    json_encode([
-                        'message' => 'passOrder',
-                        'content' => [
-                            'order_id' => $order->id,
-                            'data' => $data,
-                        ]
-                    ])
-                );
+                $publish_message = 'passOrder';
 
                 break;
 
@@ -160,16 +152,7 @@ class OrderController extends Controller
                 $result['status'] = 'ok';
                 $result['message'] = 'Order was set to cook!';
 
-                Redis::publish(
-                    'orders-channel',
-                    json_encode([
-                        'message' => 'processingOrder',
-                        'content' => [
-                            'order_id' => $order->id,
-                            'data' => $data,
-                        ]
-                    ])
-                );
+                $publish_message = 'processingOrder';
 
                 break;
 
@@ -179,19 +162,21 @@ class OrderController extends Controller
                 $result['status'] = 'ok';
                 $result['message'] = 'Order was finished!';
 
-                Redis::publish(
-                    'orders-channel',
-                    json_encode([
-                        'message' => 'finishOrder',
-                        'content' => [
-                            'order_id' => $order->id,
-                            'data' => $data,
-                        ]
-                    ])
-                );
+                $publish_message = 'finishOrder';
 
                 break;
         }
+
+        Redis::publish(
+            'orders-channel',
+            json_encode([
+                'message' => $publish_message,
+                'content' => [
+                    'order_id' => $order->id,
+                    'data' => $data,
+                ]
+            ])
+        );
 
         return json_encode($result);
     }

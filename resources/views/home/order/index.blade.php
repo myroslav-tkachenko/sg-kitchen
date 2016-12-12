@@ -21,6 +21,10 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <tr v-if="orders.length == 0">
+                                <td colspan="6" class="text-center">Немає замовлень</td>
+                            </tr>
+
                             <tr v-for="order in orders">
                                 <td>@{{ order.id }}</td>
                                 <td>@{{ order.table_id }}</td>
@@ -139,7 +143,7 @@
                     return false;
                 });
 
-                if ( ! timer ) return '0 сек.';
+                if ( ! timer ) return '- сек.';
                 return timer.time + ' сек.';
             },
 
