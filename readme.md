@@ -1,7 +1,5 @@
 ## Kitchen's Orders
 
-This is a trial assignment for SG.
-
 Dev. environment: Laravel's Homestead-7
 PHP framework: Laravel 5.3
 
